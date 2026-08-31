@@ -1,0 +1,30 @@
+title: 우아팜 - 전국 농기계임대사업소 찾기
+description: >-
+  전국 489개 농기계임대사업소를 지역별·장비종류별로 검색. 트랙터·경운기·관리기·탈곡기·이앙기 등
+  보유 장비와 위치, 전화번호를 한눈에 확인하세요.
+url: "https://wooafarm.wooahouse.com"
+baseurl: ""
+lang: ko
+timezone: Asia/Seoul
+author: WooaHouse
+
+markdown: kramdown
+kramdown:
+  input: GFM
+  hard_wrap: false
+
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - scripts/
+  - "*.py"
+  - "*.log"
+  - "*.txt"
+  - README.md
+  - .gitignore
+  - vendor/
+  - _rawdata/

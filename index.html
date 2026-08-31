@@ -1,0 +1,168 @@
+---
+layout: default
+title: 전국 농기계임대사업소 찾기
+description: 전국 489개 농기계임대사업소를 지역별·장비종류별로 검색. 트랙터·경운기·관리기·탈곡기·이앙기 등 보유 장비와 위치, 전화번호를 확인하세요.
+---
+
+<!-- 히어로 & 검색 -->
+<div class="hero">
+  <h1>🚜 우리 동네 농기계, 어디서 빌리나요?</h1>
+  <p>지역·장비종류로 농기계임대사업소를 검색하세요</p>
+  <div class="search-wrap">
+    <input type="text" id="searchInput" class="search-input"
+           placeholder="예) 청주, 트랙터, 이앙기..."
+           autocomplete="off" aria-label="농기계임대사업소 검색">
+    <button class="search-btn" onclick="doSearch()">🔍 검색</button>
+  </div>
+</div>
+
+<div class="page-with-sidebar">
+<div>
+<!-- 검색 결과 -->
+<div id="search-results"></div>
+
+<!-- 광고 -->
+<div class="top-ad-bar">
+  {% include ad.html %}
+</div>
+
+<!-- 소개 -->
+<div class="section" style="padding-bottom:0;">
+  <div style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:14px;padding:20px 24px;">
+    <p style="color:#14532D;line-height:1.8;font-size:.92rem;">
+      💡 <strong>농번기마다 트랙터·이앙기·탈곡기 빌릴 곳 찾느라 고생하셨죠?</strong>
+      전국 <strong id="totalCount">-</strong>개 농기계임대사업소의 보유 장비·위치·전화번호를 한 번에 확인하세요.
+    </p>
+  </div>
+</div>
+
+<!-- 지역별 찾기 -->
+<div class="section">
+  <h2 class="section-title">📍 지역별 농기계임대사업소 찾기</h2>
+  <div class="region-grid">
+    <a href="/region/경남/" class="region-btn"><span class="region-icon">🎋</span>경남<span class="region-count"></span></a>
+    <a href="/region/경북/" class="region-btn"><span class="region-icon">🍎</span>경북<span class="region-count"></span></a>
+    <a href="/region/강원/" class="region-btn"><span class="region-icon">🏔️</span>강원<span class="region-count"></span></a>
+    <a href="/region/전남/" class="region-btn"><span class="region-icon">🐚</span>전남<span class="region-count"></span></a>
+    <a href="/region/전북/" class="region-btn"><span class="region-icon">🌾</span>전북<span class="region-count"></span></a>
+    <a href="/region/충북/" class="region-btn"><span class="region-icon">📖</span>충북<span class="region-count"></span></a>
+    <a href="/region/충남/" class="region-btn"><span class="region-icon">🌊</span>충남<span class="region-count"></span></a>
+    <a href="/region/경기/" class="region-btn"><span class="region-icon">🌆</span>경기<span class="region-count"></span></a>
+    <a href="/region/인천/" class="region-btn"><span class="region-icon">⚓</span>인천<span class="region-count"></span></a>
+    <a href="/region/제주/" class="region-btn"><span class="region-icon">🌺</span>제주<span class="region-count"></span></a>
+    <a href="/region/대구/" class="region-btn"><span class="region-icon">🍑</span>대구<span class="region-count"></span></a>
+    <a href="/region/광주/" class="region-btn"><span class="region-icon">🎨</span>광주<span class="region-count"></span></a>
+    <a href="/region/부산/" class="region-btn"><span class="region-icon">🌅</span>부산<span class="region-count"></span></a>
+    <a href="/region/서울/" class="region-btn"><span class="region-icon">🏙️</span>서울<span class="region-count"></span></a>
+    <a href="/region/대전/" class="region-btn"><span class="region-icon">🏛️</span>대전<span class="region-count"></span></a>
+    <a href="/region/울산/" class="region-btn"><span class="region-icon">🏭</span>울산<span class="region-count"></span></a>
+    <a href="/region/세종/" class="region-btn"><span class="region-icon">🌿</span>세종<span class="region-count"></span></a>
+  </div>
+</div>
+
+<!-- 광고 -->
+<div class="top-ad-bar">
+  {% include ad.html %}
+</div>
+
+<!-- 장비 종류별 찾기 -->
+<div class="section">
+  <h2 class="section-title">🔧 장비 종류별 찾기</h2>
+  <div class="type-grid" style="grid-template-columns:repeat(4,1fr);">
+    <a href="/search/?q=트랙터" class="type-card">
+      <span class="type-icon">🚜</span>
+      <div class="type-name">트랙터</div>
+      <div class="type-count" id="cnt-트랙터"></div>
+    </a>
+    <a href="/search/?q=경운기" class="type-card">
+      <span class="type-icon">🛞</span>
+      <div class="type-name">경운기</div>
+      <div class="type-count" id="cnt-경운기"></div>
+    </a>
+    <a href="/search/?q=이앙기" class="type-card">
+      <span class="type-icon">🌿</span>
+      <div class="type-name">이앙기</div>
+      <div class="type-count" id="cnt-이앙기"></div>
+    </a>
+    <a href="/search/?q=탈곡기" class="type-card">
+      <span class="type-icon">🌾</span>
+      <div class="type-name">탈곡기</div>
+      <div class="type-count" id="cnt-탈곡기"></div>
+    </a>
+  </div>
+</div>
+
+</div>
+<aside class="tool-sidebar"></aside>
+</div>
+
+<!-- Fuse.js 검색 -->
+<script src="https://cdn.jsdelivr.net/npm/fuse.js@7.0.0/dist/fuse.min.js"></script>
+<script>
+let fuseIndex = null;
+let fuse = null;
+
+async function loadIndex() {
+  if (fuseIndex) return;
+  const resp = await fetch('/search_index.json');
+  fuseIndex = await resp.json();
+  document.getElementById('totalCount').textContent = fuseIndex.length.toLocaleString();
+  fuse = new Fuse(fuseIndex, {
+    keys: ['n', 'doShort', 'sigungu', 'addr', 'equip'],
+    threshold: 0.3,
+    minMatchCharLength: 1,
+  });
+  updateCounts();
+}
+
+function updateCounts() {
+  if (!fuseIndex) return;
+  ['트랙터','경운기','이앙기','탈곡기'].forEach(t => {
+    const el = document.getElementById('cnt-' + t);
+    if (el) el.textContent = fuseIndex.filter(f => (f.equip||[]).includes(t)).length + '곳';
+  });
+}
+
+function doSearch() {
+  const q = document.getElementById('searchInput').value.trim();
+  if (!q) { document.getElementById('search-results').innerHTML = ''; return; }
+  loadIndex().then(() => {
+    const results = fuse.search(q).slice(0, 30);
+    const el = document.getElementById('search-results');
+    if (results.length === 0) {
+      el.innerHTML = '<p style="text-align:center;padding:20px;color:#6B7280;">검색 결과가 없습니다. 지역명 또는 장비명으로 다시 검색해보세요.</p>';
+      return;
+    }
+    el.innerHTML = `<div style="max-width:960px;margin:0 auto;padding:0 20px;">
+      <p style="padding:8px 0;font-size:.9rem;color:#6B7280;">"${q}" 검색 결과 ${results.length}개</p>
+      ${results.map(r => searchResultItem(r.item)).join('')}
+    </div>`;
+    el.scrollIntoView({ behavior: 'smooth' });
+  });
+}
+
+function searchResultItem(f) {
+  return `<div class="search-result-item">
+    <a href="/office/${f.slug}/">
+      <div class="search-result-thumb" style="background:#DCFCE7;display:flex;align-items:center;justify-content:center;font-size:1.5rem;border-radius:6px;">🚜</div>
+      <div>
+        <div class="search-result-name">${f.n}</div>
+        <div class="search-result-loc">📍 ${f.doShort || ''} ${f.sigungu || ''}</div>
+        ${(f.equip||[]).slice(0,3).map(e=>`<span class="search-result-tag">${e}</span>`).join('')}
+      </div>
+    </a>
+  </div>`;
+}
+
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doSearch();
+});
+
+loadIndex();
+
+const urlQ = new URLSearchParams(location.search).get('q');
+if (urlQ) {
+  document.getElementById('searchInput').value = urlQ;
+  loadIndex().then(doSearch);
+}
+</script>

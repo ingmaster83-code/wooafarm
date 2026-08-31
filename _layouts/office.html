@@ -1,0 +1,163 @@
+---
+layout: default
+---
+
+<div class="page-with-sidebar">
+<div class="camp-page">
+
+  <!-- 브레드크럼 -->
+  <nav class="breadcrumb" aria-label="위치">
+    <a href="/">홈</a>
+    <span>›</span>
+    <a href="/region/{{ page.doShort | uri_escape }}/">{{ page.doShort }}</a>
+    <span>›</span>
+    <span>{{ page.officeName }}</span>
+  </nav>
+
+  <div class="gallery" id="gallery">
+    <div class="gallery-placeholder">🚜</div>
+  </div>
+
+  <!-- 헤더 -->
+  <div class="camp-header">
+    <div class="camp-tags">
+      <span class="tag tag-type">📍 {{ page.doShort }} {{ page.sigungu }}</span>
+      <span class="tag tag-safe">🔧 보유장비 {{ page.totalEquip }}대+</span>
+    </div>
+    <h1 class="camp-title">{{ page.officeName }}</h1>
+    {% if page.addr and page.addr != "" %}
+    <div class="camp-info-row">
+      <span class="camp-info-icon">📍</span>
+      <span>{{ page.addr }}</span>
+    </div>
+    {% endif %}
+    {% if page.tel and page.tel != "" %}
+    <div class="camp-info-row">
+      <span class="camp-info-icon">📞</span>
+      <a href="tel:{{ page.tel }}">{{ page.tel }}</a>
+    </div>
+    {% endif %}
+    {% if page.institution and page.institution != "" %}
+    <div class="camp-info-row">
+      <span class="camp-info-icon">🏛️</span>
+      <span>관리기관: {{ page.institution }}</span>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- 광고 -->
+  <div class="ad-slot">
+    {% include ad.html %}
+  </div>
+
+  <!-- 보유 장비 -->
+  <div class="camp-section trust-box">
+    <h2>🔧 보유 농기계</h2>
+    {% if page.equipment and page.equipment.size > 0 %}
+    <div class="facility-grid">
+      {% for e in page.equipment %}
+      <span class="facility-badge">{{ e.icon }} {{ e.label }} {{ e.count }}대</span>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p style="color:#6B7280;font-size:.9rem;">등록된 주요 장비 보유대수 정보가 없습니다. 아래 기타 장비를 확인하세요.</p>
+    {% endif %}
+    {% if page.etcEquip and page.etcEquip != "" %}
+    <p style="margin-top:14px;font-size:.88rem;color:#374151;"><strong>기타 임대 장비:</strong> {{ page.etcEquip | replace: "+", ", " }}</p>
+    {% endif %}
+    <p style="font-size:.82rem;color:#7C2D12;margin-top:14px;">
+      농림축산식품부·지방자치단체 공공데이터 기준{% if page.refDate and page.refDate != "" %}(데이터 기준일 {{ page.refDate }}){% endif %}입니다. 실제 재고·예약 가능 여부는 방문 전 전화로 확인하세요.
+    </p>
+  </div>
+
+  {% if page.addr and page.addr != "" %}
+  <!-- 지도 -->
+  <div class="camp-section">
+    <h2>🗺️ 위치</h2>
+    <div id="map" style="width:100%;height:280px;border-radius:10px;background:#F3F4F6;display:flex;align-items:center;justify-content:center;color:#9CA3AF;">지도를 불러오는 중...</div>
+    <a id="mapLink" href="https://map.kakao.com/?q={{ page.addr | uri_escape }}" class="reserve-btn secondary" style="margin-top:12px;display:block;">🗺️ 카카오맵에서 크게 보기</a>
+  </div>
+  {% endif %}
+
+  <!-- 광고 -->
+  <div class="ad-slot">
+    {% include ad.html %}
+  </div>
+
+  <!-- 같은 지역 사업소 -->
+  <div class="region-camps">
+    <h2>📍 {{ page.doShort }} 다른 농기계임대사업소</h2>
+    <div id="regionOfficesGrid" class="camp-grid"></div>
+    <p style="margin-top:16px;">
+      <a href="/region/{{ page.doShort | uri_escape }}/">{{ page.doShort }} 사업소 전체 보기 →</a>
+    </p>
+  </div>
+
+  <!-- Schema.org -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    "name": "{{ page.officeName | escape }}",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "{{ page.addr | escape }}",
+      "addressCountry": "KR"
+    }{% if page.tel and page.tel != "" %},
+    "telephone": "{{ page.tel | escape }}"{% endif %}{% if page.lat and page.lat != "" %},
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": {{ page.lat }},
+      "longitude": {{ page.lng }}
+    }{% endif %}
+  }
+  </script>
+
+</div>
+<aside class="tool-sidebar"></aside>
+</div>
+
+<script>
+(async () => {
+  const currentSlug = {{ page.slug | jsonify }};
+  const currentRegion = {{ page.doShort | jsonify }};
+  const currentSigungu = {{ page.sigungu | jsonify }};
+  const lat = {{ page.lat | jsonify }};
+  const lng = {{ page.lng | jsonify }};
+  const addr = {{ page.addr | jsonify }};
+
+  const mapEl = document.getElementById('map');
+  if (mapEl) {
+    if (lat && lng) {
+      mapEl.innerHTML = `<iframe src="https://map.kakao.com/link/map/${encodeURIComponent({{ page.officeName | jsonify }})},${lat},${lng}" style="width:100%;height:100%;border:0;border-radius:10px;" loading="lazy"></iframe>`;
+    } else if (addr) {
+      mapEl.innerHTML = `<iframe src="https://map.kakao.com/?q=${encodeURIComponent(addr)}" style="width:100%;height:100%;border:0;border-radius:10px;" loading="lazy"></iframe>`;
+    }
+  }
+
+  try {
+    const resp = await fetch('/search_index.json');
+    const all = await resp.json();
+
+    const regionOffices = all
+      .filter(f => f.doShort === currentRegion && f.slug !== currentSlug)
+      .sort((a,b) => (a.sigungu === currentSigungu ? -1 : 1))
+      .slice(0, 6);
+
+    if (regionOffices.length > 0) {
+      document.getElementById('regionOfficesGrid').innerHTML = regionOffices.map(officeCard).join('');
+    }
+  } catch(e) {}
+
+  function officeCard(f) {
+    return `<a class="camp-card" href="/office/${f.slug}/">
+      <div class="camp-card-img-placeholder">🚜</div>
+      <div class="camp-card-body">
+        <div class="camp-card-name">${f.n}</div>
+        <div class="camp-card-loc">📍 ${f.sigungu || f.doShort || ''}</div>
+        <div class="camp-card-tags">${(f.equip||[]).slice(0,3).map(e=>`<span class="tag tag-type">${e}</span>`).join('')}</div>
+      </div>
+    </a>`;
+  }
+})();
+</script>
